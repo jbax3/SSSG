@@ -8,17 +8,6 @@ import io
 from PIL import Image
 import base64
 
-def convert_image_to_png_bytes(image_path):
-    # Open the image file using Pillow
-    with Image.open(image_path) as img:
-        # Create an in-memory binary stream to store the PNG bytes
-        buffer = io.BytesIO()
-        # Save the image to the buffer in PNG format
-        img.save(buffer, format="PNG")
-        # Return the PNG bytes string
-        return buffer.getvalue()
-
-
 def extract_date(first_line):
     """
     Extracts a date from the first line of a markdown file and returns it as a string in YYYY-MM-DD format.
@@ -38,10 +27,10 @@ def extract_date(first_line):
             date_str = match.group(0)
             break
     else:
-        date_str = 'unknown'
+        date_str = ''
 
     # Convert the date string to a YYYY-MM-DD format
-    if date_str == 'unknown':
+    if date_str == '':
         return date_str
     elif len(date_str) == 4:
         return f"{date_str}-01-01"
@@ -74,7 +63,7 @@ def extract_quick_blurb(markdown):
 
 RES = 20
 
-def convert_image_to_jpeg_base64(image_path, res=RES):
+def convert_image_to_jpeg_base64(image_path, res=RES, quality=90):
     # Open the image file using Pillow
     with Image.open(image_path) as img:
         basewidth = min(600, img.size[0])
@@ -86,7 +75,7 @@ def convert_image_to_jpeg_base64(image_path, res=RES):
         buffer = io.BytesIO()
         # Save the image to the buffer in JPEG format
         img = img.convert('RGB')
-        img.save(buffer, format="JPEG", quality=90, dpi=(res, res))
+        img.save(buffer, format="JPEG", quality=quality, dpi=(res, res))
         # Return the base64-encoded JPEG data
         return base64.b64encode(buffer.getvalue()).decode('utf-8')
 
@@ -135,7 +124,7 @@ def find_markdown_files(directory):
 
                 # Extract a random image from the markdown, if any
                 image_matches = re.findall(r'!\[.*?\]\((.*?)\)', markdown)
-                random_image = "data:image/png;base64,"+convert_image_to_jpeg_base64("./static_resources/"+random.choice(image_matches).split("/")[-1], res=5) if image_matches else ''
+                random_image = "data:image/jpeg;base64,"+convert_image_to_jpeg_base64("./static_resources/"+random.choice(image_matches).split("/")[-1], res=5, quality=50) if image_matches else ''
 
                 # Add the metadata to the file dictionary and append it to the list
                 file_data = {
